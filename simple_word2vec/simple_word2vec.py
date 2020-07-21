@@ -36,6 +36,19 @@ class TokenEncoder():
         return len(self.list_of_tokens)
 
 class Word2Vec():
+    """ Simple Word2Vec model
+
+    Parameters
+    ----------
+    dimensions : int
+        size of the word vector
+    window_size : int
+        window size for selecting context words
+    tokenizer : function
+        function that splits a list of string into a list of list of tokens
+    token_encoder : instance of TokenEncoder
+        an encoder to encode token string into token id
+    """
     def __init__(
         self, 
         dimensions=10, 
@@ -59,7 +72,7 @@ class Word2Vec():
         # Ouput words weight metrix
         self.W_o = np.random.rand(self.vocab_size, self.n_dim)
 
-    def train(self, docs):
+    def train(self, docs, method='cbow', **kwargs):
         """ Train Simple Word2Vec on documents
         Parameters
         ----------
@@ -74,7 +87,12 @@ class Word2Vec():
         context_words, center_words = Word2Vec.split_context_center(encoded_doc_tokens, self.max_j)
         # Initialization Word Embedding
         self.initialize()
-        self.fit(context_words, center_words)
+        if method == 'cbow':
+            self.fit(context_words, center_words,
+                     gradient=cbow.gradient, loss_function=cbow.loss,
+                     **kwargs)
+        else:
+            raise AttributeError
 
     def fit(
         self, context_words, center_words, 
