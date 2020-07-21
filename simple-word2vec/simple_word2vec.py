@@ -3,11 +3,13 @@ from itertools import chain
 import numpy as np
 import pandas as pd
 from scipy.special import log_softmax, softmax
+
+import cbow
 from utils import tokenize
 
+
 class TokenEncoder():
-    """ Encode tokens into token ids.
-    """
+    """ Encode tokens into token IDs """
     def __init__(self):
         self.list_of_tokens = []  # map from token_id to token
         self.dict_of_tokens = {}  # map from token to token_id
@@ -33,7 +35,7 @@ class TokenEncoder():
     def vocab_size(self):
         return len(self.list_of_tokens)
 
-class SimpleWord2Vec():
+class Word2Vec():
     def __init__(
         self, 
         dimensions=10, 
@@ -69,14 +71,14 @@ class SimpleWord2Vec():
         encoded_doc_tokens = self.token_encoder.fit_transform(doc_tokens)
         self.vocab_size = self.token_encoder.vocab_size
         # Split context and center words
-        context_words, center_words = SimpleWord2Vec.split_context_center(encoded_doc_tokens, self.max_j)
+        context_words, center_words = Word2Vec.split_context_center(encoded_doc_tokens, self.max_j)
         # Initialization Word Embedding
         self.initialize()
         self.fit(context_words, center_words)
 
     def fit(
         self, context_words, center_words, 
-        gradient=SimpleWord2Vec.cbow_gradient, loss_function=SimpleWord2Vec.cbow_loss,
+        gradient=cbow.gradient, loss_function=cbow.loss,
         num_iterations=100, learning_rate=0.1, hist=[], verbose=1,
     ):
         W_i = self.W_i
@@ -132,11 +134,3 @@ class SimpleWord2Vec():
         ]
         center_words = list(chain.from_iterable(doc_tokens))
         return context_words, center_words
-
-    @staticmethod
-    def cbow_gradient(context_words, center_words, W_i, W_o):
-        return
-    
-    @staticmethod
-    def cbow_loss(context_words, center_words, W_i, W_o):
-        return
