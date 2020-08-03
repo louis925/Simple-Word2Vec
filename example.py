@@ -7,3 +7,8 @@ docs = [
     'cat like milk',
     'a book about cat',
 ]
+print(docs)
+
+word2vec = Word2Vec()
+
+print(word2vec)

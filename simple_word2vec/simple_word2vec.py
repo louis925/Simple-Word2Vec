@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 from scipy.special import log_softmax, softmax
 
-import cbow
-from utils import tokenize
+from . import cbow
+from .utils import tokenize
 
 
 class TokenEncoder():
