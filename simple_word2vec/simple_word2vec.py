@@ -1,15 +1,14 @@
 from itertools import chain
 
 import numpy as np
-import pandas as pd
-from scipy.special import log_softmax, softmax
 
 from . import cbow
 from .utils import tokenize
 
 
-class TokenEncoder():
+class TokenEncoder:
     """ Encode tokens into token IDs """
+
     def __init__(self):
         self.list_of_tokens = []  # map from token_id to token
         self.dict_of_tokens = {}  # map from token to token_id
@@ -35,8 +34,9 @@ class TokenEncoder():
     def vocab_size(self):
         return len(self.list_of_tokens)
 
-class Word2Vec():
-    """ Simple Word2Vec model
+
+class Word2Vec:
+    """Simple Word2Vec model
 
     Parameters
     ----------
@@ -44,20 +44,21 @@ class Word2Vec():
         size of the word vector
     window_size : int
         window size for selecting context words
-    tokenizer : function
+    tokenize : function
         function that splits a list of string into a list of list of tokens
     token_encoder : instance of TokenEncoder
         an encoder to encode token string into token id
     """
+
     def __init__(
-        self, 
-        dimensions=10, 
-        window_size=5, 
-        tokenizer=tokenize, 
+        self,
+        dimensions=10,
+        window_size=5,
+        tokenize=tokenize,
         token_encoder=TokenEncoder(),
     ):
-        assert window_size % 2 == 1, 'Window size needs to be an odd number'
-        assert window_size >= 3, 'Window size needs to be greater or equal to 3'
+        assert window_size % 2 == 1, "Window size needs to be an odd number"
+        assert window_size >= 3, "Window size needs to be greater or equal to 3"
         self.n_dim = dimensions
         self.window_size = window_size
         self.max_j = (window_size - 1) // 2
@@ -72,8 +73,8 @@ class Word2Vec():
         # Ouput words weight metrix
         self.W_o = np.random.rand(self.vocab_size, self.n_dim)
 
-    def train(self, docs, method='cbow', **kwargs):
-        """ Train Simple Word2Vec on documents
+    def train(self, docs, method="cbow", **kwargs):
+        """Train Simple Word2Vec on documents
         Parameters
         ----------
         docs: a list of strings (sentences)
@@ -87,22 +88,32 @@ class Word2Vec():
         context_words, center_words = Word2Vec.split_context_center(encoded_doc_tokens, self.max_j)
         # Initialization Word Embedding
         self.initialize()
-        if method == 'cbow':
-            self.fit(context_words, center_words,
-                     gradient=cbow.gradient, loss_function=cbow.loss,
-                     **kwargs)
+        if method == "cbow":
+            self.fit(
+                context_words,
+                center_words,
+                gradient=cbow.gradient,
+                loss_function=cbow.loss,
+                **kwargs,
+            )
         else:
             raise AttributeError
 
     def fit(
-        self, context_words, center_words, 
-        gradient=cbow.gradient, loss_function=cbow.loss,
-        num_iterations=100, learning_rate=0.1, hist=[], verbose=1,
+        self,
+        context_words,
+        center_words,
+        gradient=cbow.gradient,
+        loss_function=cbow.loss,
+        num_iterations=100,
+        learning_rate=0.1,
+        hist=[],
+        verbose=1,
     ):
         W_i = self.W_i
         W_o = self.W_o
         loss = loss_function(context_words, center_words, W_i, W_o)
-        print('Inital loss:', loss)
+        print("Inital loss:", loss)
         hist.append(loss)
         for i in range(num_iterations):
             dLdW_i, dLdW_o = gradient(context_words, center_words, W_i, W_o)
@@ -110,9 +121,9 @@ class Word2Vec():
             W_o -= learning_rate * dLdW_o
             loss = loss_function(context_words, center_words, W_i, W_o)
             if verbose > 0 and i % verbose == 0:
-                print(f'[{i+1} / {num_iterations}]', loss)
+                print(f"[{i+1} / {num_iterations}]", loss)
             hist.append(loss)
-        print('Final loss:', loss)
+        print("Final loss:", loss)
         self.W_i = W_i
         self.W_o = W_o
 
@@ -121,7 +132,7 @@ class Word2Vec():
         return self.W_i[token_ids]
 
     def predict(self, words):
-        """ Predict the word vectors for a list of words 
+        """Predict the word vectors for a list of words
         Parameters
         ----------
         words: list of strings (words)
@@ -134,7 +145,7 @@ class Word2Vec():
 
     @staticmethod
     def split_context_center(doc_tokens, max_j):
-        """ Split sentences into context words and center words
+        """Split sentences into context words and center words
         Parameters
         ----------
         doc_tokens: list of list of token
@@ -146,9 +157,9 @@ class Word2Vec():
         Tuple of a list of list of context words and a list of centers words
         """
         context_words = [
-            sentence_tokens[max(i - max_j, 0): i] + sentence_tokens[i + 1: i + max_j + 1]
+            sentence_tokens[max(i - max_j, 0) : i] + sentence_tokens[i + 1 : i + max_j + 1]
             for sentence_tokens in doc_tokens
-            for i in range(len(sentence_tokens))        
+            for i in range(len(sentence_tokens))
         ]
         center_words = list(chain.from_iterable(doc_tokens))
         return context_words, center_words
